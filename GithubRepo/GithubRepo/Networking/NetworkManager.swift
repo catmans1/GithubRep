@@ -16,13 +16,7 @@ protocol NetworkProtocol {
 
 enum NetworkManager: NetworkProtocol {
     case getAPI(path: String, data: Parameters)
-    
-    static var operationQueue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
-        
+
     static var baseURL: URL = URL(string: "https://api.github.com/")!
     
     private var path: String {
@@ -63,7 +57,7 @@ enum NetworkManager: NetworkProtocol {
     }
     
     internal static func makeRequest<T: Codable>(session: URLSession, request: URLRequest, model: T.Type, onCompletion: @escaping(Result<T?, NetworkError>) -> ()) {
-        session.dataTask(with: request) { data, response, error in
+        let sessionTask:URLSessionDataTask = session.dataTask(with: request) { data, response, error in
             
             guard error == nil, let responseData = data else {
                 onCompletion(.failure(NetworkError.apiFailure)) ; return }
@@ -90,11 +84,15 @@ enum NetworkManager: NetworkProtocol {
                 onCompletion(.failure(NetworkError.decodingError))
                 return
             }
-        }.resume()
+        }
+
+        DispatchQueue.main.throttle(deadline: DispatchTime.now() + 0.5) {
+            sessionTask.resume()
+        }
     }
     
     internal static func makeGetRequest<T: Codable> (path: String, queries: Parameters, onCompletion: @escaping(Result<T?, NetworkError>) -> ()) {
-        let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: operationQueue)
+        let session = URLSession.shared
         let request: URLRequest = Self.getAPI(path: path, data: queries).asURLRequest()
         makeRequest(session: session, request: request, model: T.self) { result in
             onCompletion(result)

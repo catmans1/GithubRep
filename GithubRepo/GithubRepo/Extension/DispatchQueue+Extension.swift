@@ -8,7 +8,7 @@
 import Dispatch
 
 private var throttleWorkItems = [AnyHashable: DispatchWorkItem]()
-private var nilContext: AnyHashable = arc4random()
+private let nilContext:AnyHashable = "DispatchQueue+Throttle"
 
 public extension DispatchQueue {
 
@@ -19,7 +19,7 @@ public extension DispatchQueue {
         }
 
         asyncAfter(deadline: deadline, execute: worker)
-
+        
         throttleWorkItems[context ?? nilContext]?.cancel()
         throttleWorkItems[context ?? nilContext] = worker
     }
