@@ -59,8 +59,10 @@ enum NetworkManager: NetworkProtocol {
     internal static func makeRequest<T: Codable>(session: URLSession, request: URLRequest, model: T.Type, onCompletion: @escaping(Result<T?, NetworkError>) -> ()) {
         
         session.dataTask(with: request) { data, response, error in
+            
             guard error == nil, let responseData = data else {
                 onCompletion(.failure(NetworkError.apiFailure)) ; return }
+            
             do {
                 if let json = try JSONSerialization.jsonObject(with: responseData, options: .mutableContainers)
                     as? Parameters  {

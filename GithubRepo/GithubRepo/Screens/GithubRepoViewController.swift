@@ -54,13 +54,6 @@ class GithubRepoViewController: UIViewController, UISearchBarDelegate {
         navigationItem.searchController = searchController
     }
     
-    fileprivate func searchRepos(searchText: String) {
-        guard let query = navigationItem.searchController?.searchBar.text, !query.isEmpty else {
-            return
-        }
-        githubRepoViewModel.searchRepos(query: query)
-    }
-    
     private func bindViewModelEvent() {
         githubRepoViewModel.onFetchSucceed = {[weak self] in
             DispatchQueue.main.async {
@@ -102,8 +95,12 @@ extension GithubRepoViewController: UITableViewDelegate {
 extension GithubRepoViewController:UISearchControllerDelegate {
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        guard !searchText.isEmpty else {
+            return
+        }
         DispatchQueue.main.throttle(deadline: DispatchTime.now() + 0.5) {[weak self] in
-            self?.searchRepos(searchText: searchText)
+            self?.githubRepoViewModel.searchRepos(query: searchText)
+
         }
     }
     

@@ -8,7 +8,6 @@
 import Dispatch
 
 private var throttleWorkItems = [AnyHashable: DispatchWorkItem]()
-private var lastDebounceCallTimes = [AnyHashable: DispatchTime]()
 private var nilContext: AnyHashable = arc4random()
 
 public extension DispatchQueue {
